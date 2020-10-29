@@ -1,12 +1,27 @@
 const https = require('https')
+const dns = require('dns')
 const { Client } = require('pg')
-const client = new Client()
 
-module.exports.hello = async (event) => {
+module.exports.hello = async (event, context) => {
+  const dnsResponse = await new Promise((resolve, reject) => {
+    const hostname = 'serverless.com'
+    dns.lookup('serverless.com', (err, address, family) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve({ hostname, address, family })
+      }
+    })
+  })
+
+  console.log({ dnsResponse })
+
   const responseHeaders = await new Promise((resolve, reject) => {
+    console.log('env:', process.env)
+    console.log('context:', context)
     console.log('Testing outbound internet connection')
     const req = https.request(
-      'https://www.google.com',
+      'https://jsonplaceholder.typicode.com/todos/1',
       { method: 'HEAD' },
       (res) => {
         console.log('Success!', res.headers)
@@ -25,6 +40,11 @@ module.exports.hello = async (event) => {
       .end()
   })
 
+  console.log({ responseHeaders })
+
+  // When client.end() is called, we need to create a new client
+  // each invocation
+  const client = new Client()
   await client.connect()
   const res = await client.query('SELECT $1::text as message', [
     'DB connection success!'
@@ -35,7 +55,8 @@ module.exports.hello = async (event) => {
   return {
     message: 'Very much success!!',
     dbResponse,
-    responseHeaders,
+    dnsResponse,
+    responseHeader: responseHeaders['content-type'],
     event
   }
 }

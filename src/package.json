@@ -1,0 +1,14 @@
+{
+  "name": "erverless-rds-aws-structure-src",
+  "version": "1.0.0",
+  "description": "Node modules for lambda",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.4.2"
+  }
+}

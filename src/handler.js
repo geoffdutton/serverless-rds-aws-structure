@@ -1,64 +1,37 @@
-const axios = require('axios').default
-const dns = require('dns')
 const { Client } = require('pg')
+const { ipLookup, urlLookup } = require('./helpers')
 
-module.exports.hello = async (event, context) => {
-  const dnsResponse = await new Promise((resolve, reject) => {
-    const hostname = 'serverless.com'
-    dns.lookup(hostname, (err, address, family) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve({ hostname, address, family })
-      }
-    })
-  })
+module.exports.hello = async (event) => {
+  console.log('env:', process.env)
+  const [dbDnsResponse, dnsResponse] = await Promise.all([
+    ipLookup(process.env.PGHOST),
+    ipLookup('encrypted.google.com')
+  ])
 
-  console.log({ dnsResponse })
+  console.log({ dnsResponse, dbDnsResponse })
 
-  const dbDnsResponse = await new Promise((resolve, reject) => {
-    const hostname = process.env.PGHOST
-    dns.lookup(hostname, (err, address, family) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve({ hostname, address, family })
-      }
-    })
-  })
-
-  console.log({ dbDnsResponse })
-
-  let httpResponse
-  const url = 'https://www.serverless.com'
-  try {
-    const res = await axios.head(url, {
-      timeout: 5000
-    })
-    httpResponse = `Successful response with status code: ${res.status}, statusText: ${res.statusText}`
-  } catch (e) {
-    if (e.response) {
-      const res = e.response
-      console.error('bad response', res.status, res.data, res.headers)
-      httpResponse = `Successful response with status code: ${res.status}, statusText: ${res.statusText}`
-    } else if (e.request) {
-      console.error('No response', url, e)
-      httpResponse = `No response from ${url}`
-    } else {
-      console.error('unknown error', e)
-      httpResponse = `Other error: ${e.message}`
-    }
-  }
+  const url = 'https://encrypted.google.com'
+  const httpResponse = await urlLookup(url)
 
   // When client.end() is called, we need to create a new client
   // each invocation
-  const client = new Client()
-  await client.connect()
-  const dbRes = await client.query('SELECT $1::text as message', [
-    'DB connection success!'
-  ])
-  const dbResponse = dbRes.rows[0].message
-  await client.end()
+  const client = new Client({
+    connectionTimeoutMillis: 10 * 1000,
+    query_timeout: 10 * 1000
+  })
+
+  let dbResponse
+  try {
+    await client.connect()
+    const dbRes = await client.query('SELECT $1::text as message', [
+      'DB connection success!'
+    ])
+    dbResponse = dbRes.rows[0].message
+  } catch (e) {
+    dbResponse = `ERROR: ${e.message}`
+  } finally {
+    await client.end()
+  }
 
   return {
     message: 'Very much success!!',

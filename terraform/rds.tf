@@ -5,7 +5,7 @@ resource "random_string" "db_password" {
 
 resource "aws_db_subnet_group" "db" {
   name       = "${local.tag_name}-db-sng"
-  subnet_ids = [aws_subnet.private_1.id, aws_subnet.private_2.id, aws_subnet.private_3.id]
+  subnet_ids = aws_subnet.private.*.id
 
   tags = {
     Name = local.tag_name

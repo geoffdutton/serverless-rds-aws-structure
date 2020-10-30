@@ -4,6 +4,7 @@
   "description": "An full example of setting up the infrastructure and project for a Serverless function that connects to RDS and the internet",
   "main": "index.js",
   "scripts": {
+    "lint": "terraform fmt terraform/ && prettier --ignore-path ./.gitignore --write .",
     "test": "cd src && serverless invoke -f hello --stage dev",
     "deploy": "cd src && serverless deploy --stage dev && cd .."
   },
@@ -29,7 +30,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,css,md}": "prettier --write",
+    "*.{js,json,css,md}": "prettier --ignore-path ./.gitignore --write",
     "*.tf": "terraform fmt"
   }
 }

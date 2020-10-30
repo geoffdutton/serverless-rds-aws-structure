@@ -1,6 +1,6 @@
 # Serverless RDS with Lambda
 
-This is the project repo for the blog post found here: [insert link when pubished]
+This is the project repo for the blog post found here: https://fakeweblog.com/how-to-use-terraform-with-serverless-for-lambda-rds-and-internet-access-ba38b8a3579a
 
 ## Perquisites
 

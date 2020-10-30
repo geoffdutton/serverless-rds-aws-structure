@@ -8,5 +8,6 @@ jspm_packages
 # Terraform outputs
 .terraform
 terraform.tfstate
+terraform.tfstate.*
 .env.*
 !.env.example

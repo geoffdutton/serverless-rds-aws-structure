@@ -34,7 +34,7 @@ module.exports.hello = async (event) => {
   }
 
   return {
-    message: 'Very much success!!',
+    message: 'Very much success!!!',
     dbResponse,
     dnsResponse,
     dbDnsResponse,

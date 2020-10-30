@@ -13,9 +13,10 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  cidr_block        = var.cidr_block_subnet_public
-  vpc_id            = aws_vpc.main.id
-  availability_zone = data.aws_availability_zones.available.names[0]
+  cidr_block              = var.cidr_block_subnet_public
+  vpc_id                  = aws_vpc.main.id
+  availability_zone       = data.aws_availability_zones.available.names[0]
+  map_public_ip_on_launch = true
   tags = {
     Name = "${local.tag_name}-public"
   }

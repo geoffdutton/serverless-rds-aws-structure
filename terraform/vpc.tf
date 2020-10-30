@@ -4,7 +4,7 @@ data "aws_availability_zones" "available" {
 }
 
 resource "aws_vpc" "main" {
-  cidr_block           = "10.1.0.0/16"
+  cidr_block           = var.cidr_block_vpc
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
@@ -34,24 +34,6 @@ resource "aws_subnet" "private" {
     Name = "${local.tag_name}-private-${count.index}"
   }
 }
-
-//resource "aws_subnet" "private_2" {
-//  cidr_block        = "10.1.3.0/24"
-//  vpc_id            = aws_vpc.main.id
-//  availability_zone = data.aws_availability_zones.available.names[1]
-//  tags = {
-//    Name = "${local.tag_name}-private-2"
-//  }
-//}
-//
-//resource "aws_subnet" "private_3" {
-//  cidr_block        = "10.1.4.0/24"
-//  vpc_id            = aws_vpc.main.id
-//  availability_zone = data.aws_availability_zones.available.names[2]
-//  tags = {
-//    Name = "${local.tag_name}-private-3"
-//  }
-//}
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id

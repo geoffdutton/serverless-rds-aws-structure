@@ -4,6 +4,9 @@
   "description": "An full example of setting up the infrastructure and project for a Serverless function that connects to RDS and the internet",
   "main": "index.js",
   "scripts": {
+    "destroy": "npm run destroy:serverless && npm run destroy:terraform",
+    "destroy:serverless": "cd src/ && serverless remove --stage dev && cd ..",
+    "destroy:terraform": "cd terraform && terraform destroy -var=\"stage=dev\" && cd ..",
     "lint": "terraform fmt terraform/ && prettier --ignore-path ./.gitignore --write .",
     "test": "cd src && serverless invoke -f hello --stage dev",
     "deploy": "cd src && serverless deploy --stage dev && cd .."

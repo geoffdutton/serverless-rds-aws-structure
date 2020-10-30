@@ -9,6 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.21.0",
     "pg": "^8.4.2"
   }
 }

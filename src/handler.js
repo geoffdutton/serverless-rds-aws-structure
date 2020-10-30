@@ -1,11 +1,11 @@
-const https = require('https')
+const axios = require('axios').default
 const dns = require('dns')
 const { Client } = require('pg')
 
 module.exports.hello = async (event, context) => {
   const dnsResponse = await new Promise((resolve, reject) => {
     const hostname = 'serverless.com'
-    dns.lookup('serverless.com', (err, address, family) => {
+    dns.lookup(hostname, (err, address, family) => {
       if (err) {
         reject(err)
       } else {
@@ -16,47 +16,56 @@ module.exports.hello = async (event, context) => {
 
   console.log({ dnsResponse })
 
-  const responseHeaders = await new Promise((resolve, reject) => {
-    console.log('env:', process.env)
-    console.log('context:', context)
-    console.log('Testing outbound internet connection')
-    const req = https.request(
-      'https://jsonplaceholder.typicode.com/todos/1',
-      { method: 'HEAD' },
-      (res) => {
-        console.log('Success!', res.headers)
-        resolve(res.headers)
-      }
-    )
-    req
-      .on('timeout', () => {
-        console.log('Timeout!!')
-        req.abort()
-      })
-      .on('error', (err) => {
-        console.log('Failed!')
+  const dbDnsResponse = await new Promise((resolve, reject) => {
+    const hostname = process.env.PGHOST
+    dns.lookup(hostname, (err, address, family) => {
+      if (err) {
         reject(err)
-      })
-      .end()
+      } else {
+        resolve({ hostname, address, family })
+      }
+    })
   })
 
-  console.log({ responseHeaders })
+  console.log({ dbDnsResponse })
+
+  let httpResponse
+  const url = 'https://www.serverless.com'
+  try {
+    const res = await axios.head(url, {
+      timeout: 5000
+    })
+    httpResponse = `Successful response with status code: ${res.status}, statusText: ${res.statusText}`
+  } catch (e) {
+    if (e.response) {
+      const res = e.response
+      console.error('bad response', res.status, res.data, res.headers)
+      httpResponse = `Successful response with status code: ${res.status}, statusText: ${res.statusText}`
+    } else if (e.request) {
+      console.error('No response', url, e)
+      httpResponse = `No response from ${url}`
+    } else {
+      console.error('unknown error', e)
+      httpResponse = `Other error: ${e.message}`
+    }
+  }
 
   // When client.end() is called, we need to create a new client
   // each invocation
   const client = new Client()
   await client.connect()
-  const res = await client.query('SELECT $1::text as message', [
+  const dbRes = await client.query('SELECT $1::text as message', [
     'DB connection success!'
   ])
-  const dbResponse = res.rows[0].message
+  const dbResponse = dbRes.rows[0].message
   await client.end()
 
   return {
     message: 'Very much success!!',
     dbResponse,
     dnsResponse,
-    responseHeader: responseHeaders['content-type'],
+    dbDnsResponse,
+    responseHeader: httpResponse,
     event
   }
 }

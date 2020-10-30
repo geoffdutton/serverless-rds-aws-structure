@@ -6,7 +6,7 @@ terraform {
 
 provider "aws" {
   // Same as in serverless.yml
-  region = "us-east-2"
+  region = var.region
   // Same as in serverless.yml
   profile = "geoffpersonal"
   // per the recommendtion, pin it to a version

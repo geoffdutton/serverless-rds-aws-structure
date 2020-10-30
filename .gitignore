@@ -9,5 +9,9 @@ jspm_packages
 .terraform
 terraform.tfstate
 terraform.tfstate.*
+src/vpc.js
+src/vpc.*.js
+
 .env.*
 !.env.example
+

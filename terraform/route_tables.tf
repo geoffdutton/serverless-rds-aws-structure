@@ -30,17 +30,9 @@ resource "aws_route" "private" {
   nat_gateway_id         = aws_nat_gateway.main.id
 }
 
-resource "aws_route_table_association" "private_1" {
+resource "aws_route_table_association" "private" {
+  count = length(var.cidr_block_subnets_private)
+  // name  = "${local.tag_name}-private-${count.index}"
   route_table_id = aws_route_table.private_lambda.id
-  subnet_id      = aws_subnet.private_1.id
-}
-
-resource "aws_route_table_association" "private_2" {
-  route_table_id = aws_route_table.private_lambda.id
-  subnet_id      = aws_subnet.private_2.id
-}
-
-resource "aws_route_table_association" "private_3" {
-  route_table_id = aws_route_table.private_lambda.id
-  subnet_id      = aws_subnet.private_3.id
+  subnet_id      = aws_subnet.private[count.index].id
 }

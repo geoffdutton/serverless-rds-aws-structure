@@ -20,20 +20,20 @@ service: serverless-rds-aws-structure
 # Check out our docs for more details
 frameworkVersion: '2'
 
+custom:
+  stage: ${opt:stage, self:provider.stage}
+
 provider:
   name: aws
   runtime: nodejs12.x
   stage: dev
-  region: us-east-2
+  region: ${file(./vpc.${self:custom.stage}.js):region}
   profile: geoffpersonal
   versionFunctions: false
+  logRetentionInDays: 7
   vpc:
-    securityGroupIds:
-      - sg-0b305cc3c7937fd45
-    subnetIds:
-      - subnet-06c9cefae59d0f0a4
-      - subnet-0d4bfeb93f96e3b41
-      - subnet-0c8a3e434ee11c477
+    securityGroupIds: ${file(./vpc.${self:custom.stage}.js):securityGroupIds}
+    subnetIds: ${file(./vpc.${self:custom.stage}.js):subnetIds}
 
 plugins:
   - serverless-dotenv-plugin

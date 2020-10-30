@@ -2,7 +2,7 @@
 
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
-  owners = ["amazon"]
+  owners      = ["amazon"]
   filter {
     name   = "name"
     values = ["amzn2-ami-hvm-*-x86_64-ebs"]
@@ -13,10 +13,10 @@ data "aws_ami" "amazon_linux_2" {
 // to the database, run migrations, etc
 
 resource "aws_instance" "bastion_host" {
-  ami = data.aws_ami.amazon_linux_2.id
-  instance_type = "t3.micro"
-  vpc_security_group_ids = [aws_security_group.ssh.id]
-  subnet_id = aws_subnet.public.id
+  ami                         = data.aws_ami.amazon_linux_2.id
+  instance_type               = "t3.micro"
+  vpc_security_group_ids      = [aws_security_group.ssh.id]
+  subnet_id                   = aws_subnet.public.id
   associate_public_ip_address = true
   // For the key pair, we could use terraform
   // to generate it, but I've chosen to just
@@ -28,8 +28,23 @@ resource "aws_instance" "bastion_host" {
   root_block_device {
     volume_type = "gp2"
     volume_size = 100
-    encrypted = true
+    encrypted   = true
   }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum update -y",
+      "sudo yum install postgresql -y"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      host        = self.public_ip
+      private_key = file("~/.ssh/${var.bastion_host_key_pair_name}.pem")
+    }
+  }
+
   tags = {
     Name = "${local.tag_name}-bastion-host"
   }
